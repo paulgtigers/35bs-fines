@@ -708,15 +708,24 @@ function fmtDate(d) {
   return s;
 }
 
+function matchLabel(dateStr) {
+  if (!dateStr) return 'Training/Other';
+  const key = String(dateStr).trim();
+  const m = DATA.matchMap[key];
+  if (m && m.opponent) return `Rd ${m.round} vs ${m.opponent}`;
+  return 'Training/Other';
+}
+
 // ── Main data store ───────────────────────────────────────────────
-let DATA = { players: [], fines: [], offences: [] };
+let DATA = { players: [], fines: [], offences: [], matchMap: {} };
 
 async function loadAllData() {
   try {
-    const [playersRaw, offencesRaw, finesRaw] = await Promise.all([
+    const [playersRaw, offencesRaw, finesRaw, scheduleRaw] = await Promise.all([
       fetchSheet('Players'),
       fetchSheet('Offences'),
       fetchSheet('Fines Log'),
+      fetchSheet('Match Schedule'),
     ]);
 
     // Parse Players — auto-detect data rows (col 0 is a numeric row #)
@@ -754,6 +763,15 @@ async function loadAllData() {
         double:   r[8],
         finalAmt: finalAmt,
       });
+    }
+
+    // Parse Match Schedule — build date-to-match lookup
+    // CSV cols: Rnd, Match Date, Opponent, Result, Goals For, Goals Against, Double Fine Week?
+    DATA.matchMap = {};
+    for (let i = 0; i < scheduleRaw.length; i++) {
+      const r = scheduleRaw[i];
+      if (!r[0] || isNaN(Number(r[0])) || !r[1]) continue;
+      DATA.matchMap[r[1].trim()] = { round: r[0], opponent: r[2] || '', result: r[3] || '' };
     }
 
     document.getElementById('lastUpdated').textContent =
@@ -911,7 +929,7 @@ function selectPlayer(name) {
       const statusClass = f.status.toLowerCase();
       const doubleTag = f.double === 'Yes' ? ' <span style="color:var(--amber);font-size:10px">×2</span>' : '';
       rows += `<tr>
-        <td style="color:var(--text-dim);font-size:11px">${fmtDate(f.date)}</td>
+        <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}<br><span style="font-size:10px;color:var(--gold-dark)">${matchLabel(f.date)}</span></td>
         <td>${f.desc || f.code}${doubleTag}</td>
         <td><span class="status-badge ${statusClass}">${f.status}</span></td>
         <td>${fmt(f.finalAmt)}</td>
@@ -919,7 +937,7 @@ function selectPlayer(name) {
     }
     histEl.innerHTML = `<table class="fine-table">
       <thead><tr>
-        <th>Date</th><th>Offence</th><th>Status</th><th style="text-align:right">Amount</th>
+        <th>Date / Match</th><th>Offence</th><th>Status</th><th style="text-align:right">Amount</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
@@ -1050,7 +1068,7 @@ function renderFinesLog() {
     const sc = f.status.toLowerCase();
     const dt = f.double === 'Yes' ? ' <span style="color:var(--amber);font-size:10px;font-weight:700;">×2</span>' : '';
     return `<tr>
-      <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}</td>
+      <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}<br><span style="font-size:10px;color:var(--gold-dark)">${matchLabel(f.date)}</span></td>
       <td style="font-weight:500;">${f.player}</td>
       <td style="color:var(--text-dim);font-size:11px;">${f.code}</td>
       <td>${f.desc||f.code}${dt}</td>
@@ -1062,7 +1080,7 @@ function renderFinesLog() {
   container.innerHTML = `
     <table class="fine-table" style="min-width:500px;">
       <thead><tr>
-        <th>Date</th>
+        <th>Date / Match</th>
         <th>Player</th>
         <th>Code</th>
         <th>Offence</th>
