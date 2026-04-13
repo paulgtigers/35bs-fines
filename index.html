@@ -762,6 +762,7 @@ async function loadAllData() {
         status:   (r[7] || '').trim(),
         double:   r[8],
         finalAmt: finalAmt,
+        comment:  (r[10] || '').trim(),
       });
     }
 
@@ -930,7 +931,7 @@ function selectPlayer(name) {
       const doubleTag = f.double === 'Yes' ? ' <span style="color:var(--amber);font-size:10px">×2</span>' : '';
       rows += `<tr>
         <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}<br><span style="font-size:10px;color:var(--gold-dark)">${matchLabel(f.date)}</span></td>
-        <td>${f.desc || f.code}${doubleTag}</td>
+        <td>${f.desc || f.code}${doubleTag}${f.comment ? '<br><span style="font-size:10px;color:var(--text-dim);font-style:italic">' + f.comment + '</span>' : ''}</td>
         <td><span class="status-badge ${statusClass}">${f.status}</span></td>
         <td>${fmt(f.finalAmt)}</td>
       </tr>`;
@@ -1071,7 +1072,7 @@ function renderFinesLog() {
       <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}<br><span style="font-size:10px;color:var(--gold-dark)">${matchLabel(f.date)}</span></td>
       <td style="font-weight:500;">${f.player}</td>
       <td style="color:var(--text-dim);font-size:11px;">${f.code}</td>
-      <td>${f.desc||f.code}${dt}</td>
+      <td>${f.desc||f.code}${dt}${f.comment ? '<br><span style="font-size:10px;color:var(--text-dim);font-style:italic">' + f.comment + '</span>' : ''}</td>
       <td><span class="status-badge ${sc}">${f.status}</span></td>
       <td style="text-align:right;font-family:'DM Mono',monospace;">${fmt(f.finalAmt)}</td>
     </tr>`;
