@@ -719,28 +719,28 @@ async function loadAllData() {
       fetchSheet('Fines Log'),
     ]);
 
-    // Parse Players — header at row index 2 (0-based), data from index 3
+    // Parse Players — auto-detect data rows (col 0 is a numeric row #)
     DATA.players = [];
-    for (let i = 3; i < playersRaw.length; i++) {
+    for (let i = 0; i < playersRaw.length; i++) {
       const r = playersRaw[i];
-      if (!r[1]) continue;
+      if (!r[0] || isNaN(Number(r[0])) || !r[1]) continue;
       DATA.players.push({ name: r[1], shirt: r[2], active: r[3] });
     }
 
-    // Parse Offences — header row index 2, data from index 3
+    // Parse Offences — auto-detect data rows (col 0 matches F01-F99 pattern)
     DATA.offences = [];
-    for (let i = 3; i < offencesRaw.length; i++) {
+    for (let i = 0; i < offencesRaw.length; i++) {
       const r = offencesRaw[i];
-      if (!r[0] || !r[1]) continue;
-      DATA.offences.push({ code: r[0], desc: r[1], amount: parseAmt(r[2]) });
+      if (!r[0] || !/^F\d+$/i.test(r[0].trim()) || !r[1]) continue;
+      DATA.offences.push({ code: r[0].trim(), desc: r[1], amount: parseAmt(r[2]) });
     }
 
-    // Parse Fines Log — header at row 3 (index 3), data from index 4
+    // Parse Fines Log — auto-detect data rows (col 0 is a numeric fine ID)
     // Cols: ID, Date, Player, Shirt, Code, Desc, BaseAmt, Status, DoubleWeek, FinalAmt
     DATA.fines = [];
-    for (let i = 4; i < finesRaw.length; i++) {
+    for (let i = 0; i < finesRaw.length; i++) {
       const r = finesRaw[i];
-      if (!r[0] || !r[2]) continue;
+      if (!r[0] || isNaN(Number(r[0])) || !r[2]) continue;
       const finalAmt = parseAmt(r[9]) || parseAmt(r[6]);
       DATA.fines.push({
         id:       r[0],
