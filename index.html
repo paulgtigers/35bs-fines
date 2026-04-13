@@ -572,9 +572,10 @@
 
   <!-- Tab bar -->
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
-    <button class="tab-btn" onclick="showTab('player')">👤 Player</button>
-    <button class="tab-btn" onclick="showTab('offences')">📋 Offences</button>
+    <button class="tab-btn active" onclick="showTab('leaderboard',this)">🏆 Leaderboard</button>
+    <button class="tab-btn" onclick="showTab('player',this)">👤 Player</button>
+    <button class="tab-btn" onclick="showTab('offences',this)">📋 Offences</button>
+    <button class="tab-btn" onclick="showTab('fineslog',this)">📒 Fines Log</button>
   </div>
 
   <!-- ══ TAB 1: LEADERBOARD ══ -->
@@ -616,6 +617,31 @@
       <div id="offenceContent"><div class="loading">Fetching data</div></div>
     </div>
   </div>
+
+  <!-- ══ TAB 4: FINES LOG ══ -->
+  <div class="tab-panel" id="tab-fineslog">
+    <div class="card">
+      <div class="section-title"><span>📒</span> Full Fines Log</div>
+      <div id="finesFilters" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px;">
+        <select id="filterPlayer" onchange="renderFinesLog()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;width:100%;">
+          <option value="">All Players</option>
+        </select>
+        <select id="filterOffence" onchange="renderFinesLog()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;width:100%;">
+          <option value="">All Offences</option>
+        </select>
+        <select id="filterStatus" onchange="renderFinesLog()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;width:100%;">
+          <option value="">All Statuses</option>
+          <option value="Unpaid">Unpaid</option>
+          <option value="Paid">Paid</option>
+          <option value="Waived">Waived</option>
+        </select>
+        <button onclick="clearFinesFilters()" style="background:var(--surface3);color:var(--text-dim);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">✕ Clear Filters</button>
+      </div>
+      <div id="finesLogSummary" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;"></div>
+      <div id="finesLogContent" style="overflow-x:auto;"><div class="loading">Fetching data</div></div>
+    </div>
+  </div>
+
 
 </main>
 
@@ -749,6 +775,7 @@ function renderAll() {
   renderLeaderboard();
   renderPlayerSelector();
   renderOffences();
+  renderFinesLog();
 }
 
 // ── Team stats ────────────────────────────────────────────────────
@@ -836,7 +863,7 @@ function renderPlayerSelector() {
 // ── Select a player ───────────────────────────────────────────────
 function selectPlayer(name) {
   // Switch to player tab
-  showTab('player');
+  showTab('player', document.querySelectorAll('.tab-btn')[1]);
 
   // Highlight button
   document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
@@ -939,18 +966,113 @@ function renderOffences() {
 }
 
 // ── Tab switching ─────────────────────────────────────────────────
-function showTab(id) {
+function showTab(id, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
-  event?.target?.classList.add('active');
-  // Fix: find button by tab name when called programmatically
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('active');
-  });
+  if (btn) { btn.classList.add('active'); }
+  else {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      if (b.getAttribute('onclick')?.includes("'" + id + "'")) b.classList.add('active');
+    });
+  }
 }
 
 // ── Boot ──────────────────────────────────────────────────────────
+function populateFinesFilters() {
+  // Players
+  const pSel = document.getElementById('filterPlayer');
+  const existing = Array.from(pSel.options).map(o => o.value);
+  DATA.players.forEach(p => {
+    if (!existing.includes(p.name)) {
+      const o = document.createElement('option');
+      o.value = p.name; o.textContent = p.name;
+      pSel.appendChild(o);
+    }
+  });
+  // Offences
+  const oSel = document.getElementById('filterOffence');
+  const existingO = Array.from(oSel.options).map(o => o.value);
+  DATA.offences.forEach(o => {
+    if (!existingO.includes(o.code)) {
+      const opt = document.createElement('option');
+      opt.value = o.code; opt.textContent = o.desc;
+      oSel.appendChild(opt);
+    }
+  });
+}
+
+function clearFinesFilters() {
+  document.getElementById('filterPlayer').value = '';
+  document.getElementById('filterOffence').value = '';
+  document.getElementById('filterStatus').value = '';
+  renderFinesLog();
+}
+
+function renderFinesLog() {
+  populateFinesFilters();
+  const playerF  = document.getElementById('filterPlayer').value;
+  const offenceF = document.getElementById('filterOffence').value;
+  const statusF  = document.getElementById('filterStatus').value;
+
+  let filtered = DATA.fines.filter(f => {
+    if (playerF  && f.player !== playerF)  return false;
+    if (offenceF && f.code   !== offenceF) return false;
+    if (statusF  && f.status !== statusF)  return false;
+    return true;
+  });
+
+  // Summary strip
+  const active = filtered.filter(f => f.status !== 'Waived');
+  const total  = active.reduce((s,f) => s+f.finalAmt, 0);
+  const paid   = active.filter(f=>f.status==='Paid').reduce((s,f)=>s+f.finalAmt,0);
+  const owing  = total - paid;
+  const summaryEl = document.getElementById('finesLogSummary');
+  const pill = (label, val, col) =>
+    `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;">
+      <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">${label} </span>
+      <span style="font-family:'DM Mono',monospace;color:${col};font-weight:600;">${val}</span>
+    </div>`;
+  summaryEl.innerHTML =
+    pill('Showing', filtered.length + ' fines', 'var(--text)') +
+    pill('Total', fmt(total), 'var(--gold)') +
+    pill('Paid', fmt(paid), 'var(--green)') +
+    pill('Owing', fmt(owing), owing > 0 ? 'var(--red)' : 'var(--text-dim)');
+
+  const container = document.getElementById('finesLogContent');
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state">No fines match the current filters.</div>';
+    return;
+  }
+
+  const rows = filtered.map(f => {
+    const sc = f.status.toLowerCase();
+    const dt = f.double === 'Yes' ? ' <span style="color:var(--amber);font-size:10px;font-weight:700;">×2</span>' : '';
+    return `<tr>
+      <td style="color:var(--text-dim);font-size:11px;white-space:nowrap;">${fmtDate(f.date)}</td>
+      <td style="font-weight:500;">${f.player}</td>
+      <td style="color:var(--text-dim);font-size:11px;">${f.code}</td>
+      <td>${f.desc||f.code}${dt}</td>
+      <td><span class="status-badge ${sc}">${f.status}</span></td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;">${fmt(f.finalAmt)}</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <table class="fine-table" style="min-width:500px;">
+      <thead><tr>
+        <th>Date</th>
+        <th>Player</th>
+        <th>Code</th>
+        <th>Offence</th>
+        <th>Status</th>
+        <th style="text-align:right">Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
 loadAllData();
 
 // Auto-refresh every 5 minutes
