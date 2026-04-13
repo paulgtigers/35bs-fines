@@ -1,951 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>35Bs – Georges River FC Tigers | Fines Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --gold:        #F5A800;
-    --gold-dark:   #C88A00;
-    --gold-dim:    #3D2A00;
-    --gold-glow:   rgba(245,168,0,0.15);
-    --black:       #0A0A0A;
-    --surface:     #111111;
-    --surface2:    #1A1A1A;
-    --surface3:    #222222;
-    --border:      rgba(245,168,0,0.2);
-    --text:        #F0F0F0;
-    --text-dim:    #888888;
-    --green:       #2ECC71;
-    --red:         #E74C3C;
-    --amber:       #F39C12;
-  }
-
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  body {
-    background: var(--black);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── Background texture ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 40px,
-        rgba(245,168,0,0.02) 40px,
-        rgba(245,168,0,0.02) 41px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 40px,
-        rgba(245,168,0,0.02) 40px,
-        rgba(245,168,0,0.02) 41px
-      );
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── Header ── */
-  header {
-    position: relative;
-    z-index: 10;
-    background: linear-gradient(180deg, #1a1a00 0%, var(--black) 100%);
-    border-bottom: 2px solid var(--gold);
-    padding: 20px 20px 16px;
-    text-align: center;
-  }
-
-  .header-inner {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-
-  .club-badge {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 2px solid var(--gold);
-    object-fit: cover;
-    flex-shrink: 0;
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-  }
-
-  .header-text h1 {
-    font-family: 'Bebas Neue', cursive;
-    font-size: clamp(28px, 6vw, 48px);
-    color: var(--gold);
-    letter-spacing: 3px;
-    line-height: 1;
-  }
-
-  .header-text p {
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  .last-updated {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-align: center;
-    padding: 6px;
-    letter-spacing: 1px;
-  }
-
-  /* ── Layout ── */
-  main {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 16px 12px 40px;
-  }
-
-  /* ── Section headers ── */
-  .section-title {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 22px;
-    color: var(--gold);
-    letter-spacing: 3px;
-    padding: 0 0 10px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-title span { font-size: 20px; }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-
-  /* ── Stat strip ── */
-  .stats-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 10px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--gold);
-  }
-
-  .stat-value {
-    font-family: 'Bebas Neue', cursive;
-    font-size: clamp(22px, 5vw, 34px);
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 9px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-top: 4px;
-  }
-
-  /* ── Leaderboard ── */
-  .leaderboard-row {
-    display: grid;
-    grid-template-columns: 42px 1fr 70px 70px;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    border: 1px solid transparent;
-  }
-
-  .leaderboard-row:hover {
-    background: var(--gold-glow);
-    border-color: var(--border);
-    transform: translateX(2px);
-  }
-
-  .leaderboard-row.rank-1 { background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.3); }
-  .leaderboard-row.rank-2 { background: rgba(192,192,192,0.08); border-color: rgba(192,192,192,0.2); }
-  .leaderboard-row.rank-3 { background: rgba(205,127,50,0.1); border-color: rgba(205,127,50,0.25); }
-
-  .rank-badge {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 18px;
-    color: var(--text-dim);
-    text-align: center;
-  }
-
-  .rank-1 .rank-badge { color: #FFD700; }
-  .rank-2 .rank-badge { color: #C0C0C0; }
-  .rank-3 .rank-badge { color: #CD7F32; }
-
-  .player-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 8px;
-  }
-
-  .fine-amount {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--gold);
-    text-align: right;
-  }
-
-  .owing-amount {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    text-align: right;
-  }
-
-  .owing-amount.has-debt { color: var(--red); }
-  .owing-amount.no-debt  { color: var(--text-dim); }
-
-  .lb-header {
-    display: grid;
-    grid-template-columns: 42px 1fr 70px 70px;
-    padding: 0 12px 8px;
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-  }
-
-  .lb-header span:nth-child(3),
-  .lb-header span:nth-child(4) { text-align: right; }
-
-  /* ── Player selector ── */
-  .player-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .player-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-dim);
-    line-height: 1.3;
-  }
-
-  .player-btn:hover   { background: var(--gold-glow); border-color: var(--gold); color: var(--text); }
-  .player-btn.active  { background: var(--gold); border-color: var(--gold); color: var(--black); font-weight: 700; }
-
-  .shirt-num {
-    display: block;
-    font-family: 'Bebas Neue', cursive;
-    font-size: 20px;
-    color: var(--gold);
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-
-  .player-btn.active .shirt-num { color: var(--black); }
-
-  /* ── Player stats ── */
-  .player-stats {
-    display: none;
-  }
-
-  .player-stats.visible { display: block; }
-
-  .player-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-    padding: 14px;
-    background: var(--surface2);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }
-
-  .player-avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bebas Neue', cursive;
-    font-size: 22px;
-    color: var(--black);
-    flex-shrink: 0;
-  }
-
-  .player-info h2 {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 24px;
-    color: var(--gold);
-    letter-spacing: 1px;
-  }
-
-  .player-info p {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .player-mini-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .mini-stat {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-  }
-
-  .mini-stat-val {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 26px;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .mini-stat-val.red   { color: var(--red); }
-  .mini-stat-val.green { color: var(--green); }
-
-  .mini-stat-lbl {
-    font-size: 9px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 3px;
-  }
-
-  /* ── Fine history table ── */
-  .fine-table { width: 100%; border-collapse: collapse; }
-
-  .fine-table th {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    font-weight: 500;
-  }
-
-  .fine-table th:last-child { text-align: right; }
-
-  .fine-table td {
-    padding: 9px 10px;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    vertical-align: middle;
-  }
-
-  .fine-table tr:last-child td { border-bottom: none; }
-  .fine-table td:last-child { text-align: right; font-family: 'DM Mono', monospace; }
-
-  .status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  .status-badge.unpaid { background: rgba(231,76,60,0.2);  color: var(--red);   }
-  .status-badge.paid   { background: rgba(46,204,113,0.2); color: var(--green); }
-  .status-badge.waived { background: rgba(255,255,255,0.08); color: var(--text-dim); }
-
-  /* ── Fine type breakdown ── */
-  .fine-type-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-
-  .fine-type-row:last-child { border-bottom: none; }
-
-  .fine-type-bar-wrap {
-    flex: 1;
-    height: 6px;
-    background: var(--surface3);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .fine-type-bar {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 3px;
-    transition: width 0.6s ease;
-  }
-
-  .fine-type-name { font-size: 12px; color: var(--text); min-width: 0; flex: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fine-type-count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-dim); width: 30px; text-align: right; flex-shrink: 0; }
-  .fine-type-amt   { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); width: 55px; text-align: right; flex-shrink: 0; }
-
-  /* ── Loading / error ── */
-  .loading {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-dim);
-    font-size: 13px;
-    letter-spacing: 1px;
-  }
-
-  .loading::after {
-    content: '';
-    display: block;
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 16px auto 0;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error-msg {
-    text-align: center;
-    padding: 30px;
-    color: var(--red);
-    font-size: 13px;
-    background: rgba(231,76,60,0.08);
-    border: 1px solid rgba(231,76,60,0.2);
-    border-radius: 10px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 24px;
-    color: var(--text-dim);
-    font-size: 13px;
-  }
-
-  /* ── Tabs ── */
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 9px 6px;
-    border: none;
-    border-radius: 7px;
-    background: transparent;
-    color: var(--text-dim);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-
-  .tab-btn.active {
-    background: var(--gold);
-    color: var(--black);
-  }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* ── Footer ── */
-  footer {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding: 20px;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    border-top: 1px solid var(--border);
-  }
-
-  footer a { color: var(--gold); text-decoration: none; }
-
-  /* ── Animations ── */
-  .fade-in {
-    animation: fadeIn 0.4s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 480px) {
-    .stats-strip { grid-template-columns: repeat(2, 1fr); }
-    .player-selector { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-    .leaderboard-row { grid-template-columns: 36px 1fr 60px 60px; }
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="header-inner">
-    <div class="club-badge">🐯</div>
-    <div class="header-text">
-      <h1>35Bs Fines Tracker</h1>
-      <p>Georges River FC Tigers &nbsp;·&nbsp; 2026 Season</p>
-    </div>
-  </div>
-</header>
-<div class="last-updated" id="lastUpdated">Loading data…</div>
-
-<main>
-
-  <!-- Tab bar -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
-    <button class="tab-btn" onclick="showTab('player')">👤 Player</button>
-    <button class="tab-btn" onclick="showTab('offences')">📋 Offences</button>
-  </div>
-
-  <!-- ══ TAB 1: LEADERBOARD ══ -->
-  <div class="tab-panel active" id="tab-leaderboard">
-    <div class="stats-strip" id="teamStats">
-      <div class="stat-box"><div class="stat-value" id="statTotal">–</div><div class="stat-label">Total Fines</div></div>
-      <div class="stat-box"><div class="stat-value" id="statOwing">–</div><div class="stat-label">$ Owing</div></div>
-      <div class="stat-box"><div class="stat-value" id="statPaid">–</div><div class="stat-label">$ Paid</div></div>
-      <div class="stat-box"><div class="stat-value" id="statCount">–</div><div class="stat-label">Fines Issued</div></div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><span>🏆</span> Season Leaderboard</div>
-      <div id="leaderboardContent"><div class="loading">Fetching data</div></div>
-    </div>
-  </div>
-
-  <!-- ══ TAB 2: PLAYER DASHBOARD ══ -->
-  <div class="tab-panel" id="tab-player">
-    <div class="card">
-      <div class="section-title"><span>👤</span> Select Player</div>
-      <div class="player-selector" id="playerSelector"></div>
-    </div>
-
-    <div class="player-stats" id="playerStats">
-      <div class="card">
-        <div class="player-header" id="playerHeader"></div>
-        <div class="player-mini-stats" id="playerMiniStats"></div>
-        <div class="section-title" style="font-size:16px"><span>📅</span> Fine History</div>
-        <div id="playerHistory"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ TAB 3: OFFENCES ══ -->
-  <div class="tab-panel" id="tab-offences">
-    <div class="card">
-      <div class="section-title"><span>📋</span> Fine-Type Summary</div>
-      <div id="offenceContent"><div class="loading">Fetching data</div></div>
-    </div>
-  </div>
-
-</main>
-
-<footer>
-  <a href="https://www.grfc.com.au/" target="_blank">grfc.com.au</a>
-  &nbsp;·&nbsp; Read-only · Data updates when the treasurer saves the spreadsheet
-</footer>
-
-<script>
-const SHEET_ID = '11i2Cyyp0zvxqVVI_qpwq4ZUf8-uqZ1ST';
-
-// ── Fetch CSV from Google Sheets ──────────────────────────────────
-async function fetchSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const text = await res.text();
-  return parseCSV(text);
-}
-
-function parseCSV(text) {
-  const rows = [];
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    const cols = [];
-    let inQuote = false, cur = '';
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
-        else inQuote = !inQuote;
-      } else if (ch === ',' && !inQuote) {
-        cols.push(cur.trim()); cur = '';
-      } else cur += ch;
-    }
-    cols.push(cur.trim());
-    rows.push(cols);
-  }
-  return rows;
-}
-
-function fmt(n) {
-  if (n === null || n === undefined || n === '' || isNaN(n)) return '$0';
-  return '$' + Number(n).toLocaleString('en-AU', {minimumFractionDigits:0, maximumFractionDigits:0});
-}
-
-function fmtDate(d) {
-  if (!d) return '';
-  // Handle various date formats
-  if (d instanceof Date) return d.toLocaleDateString('en-AU');
-  const s = String(d);
-  // Already formatted
-  if (s.match(/\d{1,2}\/\d{1,2}\/\d{4}/)) return s;
-  return s;
-}
-
-// ── Main data store ───────────────────────────────────────────────
-let DATA = { players: [], fines: [], offences: [] };
-
-async function loadAllData() {
-  try {
-    const [playersRaw, offencesRaw, finesRaw] = await Promise.all([
-      fetchSheet('Players'),
-      fetchSheet('Offences'),
-      fetchSheet('Fines Log'),
-    ]);
-
-    // Parse Players — header at row index 2 (0-based), data from index 3
-    DATA.players = [];
-    for (let i = 3; i < playersRaw.length; i++) {
-      const r = playersRaw[i];
-      if (!r[1]) continue;
-      DATA.players.push({ name: r[1], shirt: r[2], active: r[3] });
-    }
-
-    // Parse Offences — header row index 2, data from index 3
-    DATA.offences = [];
-    for (let i = 3; i < offencesRaw.length; i++) {
-      const r = offencesRaw[i];
-      if (!r[0] || !r[1]) continue;
-      DATA.offences.push({ code: r[0], desc: r[1], amount: parseFloat(r[2]) || 0 });
-    }
-
-    // Parse Fines Log — header at row 3 (index 3), data from index 4
-    // Cols: ID, Date, Player, Shirt, Code, Desc, BaseAmt, Status, DoubleWeek, FinalAmt
-    DATA.fines = [];
-    for (let i = 4; i < finesRaw.length; i++) {
-      const r = finesRaw[i];
-      if (!r[0] || !r[2]) continue;
-      const finalAmt = parseFloat(r[9]) || parseFloat(r[6]) || 0;
-      DATA.fines.push({
-        id:       r[0],
-        date:     r[1],
-        player:   r[2],
-        shirt:    r[3],
-        code:     r[4],
-        desc:     r[5],
-        baseAmt:  parseFloat(r[6]) || 0,
-        status:   (r[7] || '').trim(),
-        double:   r[8],
-        finalAmt: finalAmt,
-      });
-    }
-
-    document.getElementById('lastUpdated').textContent =
-      `Last loaded: ${new Date().toLocaleTimeString('en-AU')} · ${DATA.fines.length} fines recorded`;
-
-    renderAll();
-
-  } catch(e) {
-    console.error(e);
-    document.getElementById('leaderboardContent').innerHTML =
-      `<div class="error-msg">⚠️ Could not load data.<br><small>Make sure the sheet is shared publicly (Anyone with link → Viewer).<br>${e.message}</small></div>`;
-    document.getElementById('lastUpdated').textContent = 'Error loading data';
-  }
-}
-
-// ── Render all sections ───────────────────────────────────────────
-function renderAll() {
-  renderTeamStats();
-  renderLeaderboard();
-  renderPlayerSelector();
-  renderOffences();
-}
-
-// ── Team stats ────────────────────────────────────────────────────
-function renderTeamStats() {
-  const activeFines = DATA.fines.filter(f => f.status !== 'Waived');
-  const total  = activeFines.reduce((s,f) => s + f.finalAmt, 0);
-  const paid   = activeFines.filter(f => f.status === 'Paid').reduce((s,f) => s + f.finalAmt, 0);
-  const owing  = total - paid;
-
-  document.getElementById('statTotal').textContent  = fmt(total);
-  document.getElementById('statOwing').textContent  = fmt(owing);
-  document.getElementById('statPaid').textContent   = fmt(paid);
-  document.getElementById('statCount').textContent  = activeFines.length;
-}
-
-// ── Leaderboard ───────────────────────────────────────────────────
-function renderLeaderboard() {
-  const container = document.getElementById('leaderboardContent');
-
-  // Aggregate per player
-  const map = {};
-  for (const p of DATA.players) {
-    map[p.name] = { name: p.name, shirt: p.shirt, total: 0, paid: 0, owing: 0, count: 0 };
-  }
-  for (const f of DATA.fines) {
-    if (!map[f.player] || f.status === 'Waived') continue;
-    map[f.player].total += f.finalAmt;
-    map[f.player].count++;
-    if (f.status === 'Paid') map[f.player].paid += f.finalAmt;
-  }
-  for (const p of Object.values(map)) p.owing = p.total - p.paid;
-
-  const sorted = Object.values(map)
-    .filter(p => p.total > 0)
-    .sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
-
-  if (!sorted.length) {
-    container.innerHTML = '<div class="empty-state">No fines recorded yet. Clean slate! 🏆</div>';
-    return;
-  }
-
-  // Assign ranks (equal for ties)
-  let rank = 1;
-  for (let i = 0; i < sorted.length; i++) {
-    if (i > 0 && sorted[i].total < sorted[i-1].total) rank = i + 1;
-    sorted[i].rank = rank;
-  }
-
-  const rankLabel = r => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : r;
-  const rankClass = r => r <= 3 ? `rank-${r}` : '';
-
-  let html = `<div class="lb-header">
-    <span></span><span>Player</span>
-    <span style="text-align:right">Total</span>
-    <span style="text-align:right">Owing</span>
-  </div>`;
-
-  for (const p of sorted) {
-    const owingClass = p.owing > 0 ? 'has-debt' : 'no-debt';
-    html += `<div class="leaderboard-row ${rankClass(p.rank)} fade-in" onclick="selectPlayer('${p.name.replace(/'/g,"\\'")}')">
-      <div class="rank-badge">${rankLabel(p.rank)}</div>
-      <div class="player-name">${p.name}</div>
-      <div class="fine-amount">${fmt(p.total)}</div>
-      <div class="owing-amount ${owingClass}">${p.owing > 0 ? fmt(p.owing) : '✓'}</div>
-    </div>`;
-  }
-
-  container.innerHTML = html;
-}
-
-// ── Player selector ───────────────────────────────────────────────
-function renderPlayerSelector() {
-  const container = document.getElementById('playerSelector');
-  let html = '';
-  for (const p of DATA.players) {
-    html += `<button class="player-btn" id="btn-${p.name.replace(/\s+/g,'_')}"
-      onclick="selectPlayer('${p.name.replace(/'/g,"\\'")}')">
-      <span class="shirt-num">#${p.shirt}</span>
-      ${p.name.split(' ').slice(-1)[0]}
-    </button>`;
-  }
-  container.innerHTML = html;
-}
-
-// ── Select a player ───────────────────────────────────────────────
-function selectPlayer(name) {
-  // Switch to player tab
-  showTab('player');
-
-  // Highlight button
-  document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + name.replace(/\s+/g,'_'));
-  if (btn) { btn.classList.add('active'); btn.scrollIntoView({behavior:'smooth', block:'nearest'}); }
-
-  const player = DATA.players.find(p => p.name === name);
-  const fines  = DATA.fines.filter(f => f.player === name);
-  const active = fines.filter(f => f.status !== 'Waived');
-  const total  = active.reduce((s,f) => s + f.finalAmt, 0);
-  const paid   = active.filter(f => f.status === 'Paid').reduce((s,f) => s + f.finalAmt, 0);
-  const owing  = total - paid;
-
-  // Header
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('playerHeader').innerHTML = `
-    <div class="player-avatar">${initials}</div>
-    <div class="player-info">
-      <h2>${name}</h2>
-      <p>Shirt #${player?.shirt || '–'} &nbsp;·&nbsp; ${fines.length} fine${fines.length !== 1 ? 's' : ''} issued</p>
-    </div>`;
-
-  // Mini stats
-  document.getElementById('playerMiniStats').innerHTML = `
-    <div class="mini-stat">
-      <div class="mini-stat-val">${fmt(total)}</div>
-      <div class="mini-stat-lbl">Total Fines</div>
-    </div>
-    <div class="mini-stat">
-      <div class="mini-stat-val green">${fmt(paid)}</div>
-      <div class="mini-stat-lbl">Paid</div>
-    </div>
-    <div class="mini-stat">
-      <div class="mini-stat-val ${owing > 0 ? 'red' : ''}">${fmt(owing)}</div>
-      <div class="mini-stat-lbl">Owing</div>
-    </div>`;
-
-  // Fine history
-  const histEl = document.getElementById('playerHistory');
-  if (!fines.length) {
-    histEl.innerHTML = '<div class="empty-state">No fines yet — squeaky clean! ✨</div>';
-  } else {
-    let rows = '';
-    for (const f of [...fines].reverse()) {
-      const statusClass = f.status.toLowerCase();
-      const doubleTag = f.double === 'Yes' ? ' <span style="color:var(--amber);font-size:10px">×2</span>' : '';
-      rows += `<tr>
-        <td style="color:var(--text-dim);font-size:11px">${fmtDate(f.date)}</td>
-        <td>${f.desc || f.code}${doubleTag}</td>
-        <td><span class="status-badge ${statusClass}">${f.status}</span></td>
-        <td>${fmt(f.finalAmt)}</td>
-      </tr>`;
-    }
-    histEl.innerHTML = `<table class="fine-table">
-      <thead><tr>
-        <th>Date</th><th>Offence</th><th>Status</th><th style="text-align:right">Amount</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-  }
-
-  document.getElementById('playerStats').classList.add('visible');
-  document.getElementById('playerStats').scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-// ── Offences summary ──────────────────────────────────────────────
-function renderOffences() {
-  const container = document.getElementById('offenceContent');
-  const activeFines = DATA.fines.filter(f => f.status !== 'Waived');
-
-  const counts = {};
-  const amounts = {};
-  for (const f of activeFines) {
-    counts[f.code]  = (counts[f.code]  || 0) + 1;
-    amounts[f.code] = (amounts[f.code] || 0) + f.finalAmt;
-  }
-
-  const offencesSorted = DATA.offences
-    .map(o => ({ ...o, count: counts[o.code] || 0, raised: amounts[o.code] || 0 }))
-    .filter(o => o.count > 0)
-    .sort((a,b) => b.count - a.count);
-
-  if (!offencesSorted.length) {
-    container.innerHTML = '<div class="empty-state">No fines logged yet.</div>';
-    return;
-  }
-
-  const maxCount = offencesSorted[0].count;
-  let html = '';
-  for (const o of offencesSorted) {
-    const pct = Math.round((o.count / maxCount) * 100);
-    html += `<div class="fine-type-row fade-in">
-      <div class="fine-type-name" title="${o.desc}">${o.desc}</div>
-      <div class="fine-type-bar-wrap"><div class="fine-type-bar" style="width:${pct}%"></div></div>
-      <div class="fine-type-count">${o.count}×</div>
-      <div class="fine-type-amt">${fmt(o.raised)}</div>
-    </div>`;
-  }
-  container.innerHTML = html;
-}
-
-// ── Tab switching ─────────────────────────────────────────────────
-function showTab(id) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  event?.target?.classList.add('active');
-  // Fix: find button by tab name when called programmatically
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('active');
-  });
-}
-
-// ── Boot ──────────────────────────────────────────────────────────
-loadAllData();
-
-// Auto-refresh every 5 minutes
-setInterval(loadAllData, 5 * 60 * 1000);
-</script>
-</body>
-</html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>35Bs – Georges River FC Tigers | Fines Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+      :root {
+            --gold:        #F5A800;
+            --gold-dark:   #C88A00;
+            --gold-dim:    #3D2A00;
+            --gold-glow:   rgba(245,168,0,0.15);
+            --black:       #0A0A0A;
+            --surface:     #111111;
+            --surface2:    #1A1A1A;
+            --surface3:    #222222;
+            --border:      rgba(245,168,0,0.2);
+            --text:        #F0F0F0;
+            --text-dim:    #888888;
+            --green:       #2ECC71;
+            --red:         #E74C3C;
+                  --amber:       #F39C12;
+      }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { background:var(--black); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+      body::before { content:''; position:fixed; inset:0; background: repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(245,168,0,0.02) 40px,rgba(245,168,0,0.02) 41px), repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(245,168,0,0.02) 40px,rgba(245,168,0,0.02) 41px); pointer-events:none; z-index:0; }
+      header { position:relative; z-index:10; background:linear-gradient(180deg,#1a1a00 0%,var(--black) 100%); border-bottom:2px solid var(--gold); padding:20px 20px 16px; text-align:center; }
+      .header-inner { max-width:900px; margin:0 auto; display:flex; align-items:center; justify-content:center; gap:16px; }
+      .club-badge { width:64px; height:64px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; flex-shrink:0; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:28px; }
+      .header-text h1 { font-family:'Bebas Neue',cursive; font-size:clamp(28px,6vw,48px); color:var(--gold); letter-spacing:3px; line-height:1; }
+      .header-text p { font-size:11px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+      .last-updated { font-size:10px; color:var(--text-dim); text-align:center; padding:6px; letter-spacing:1px; }
+      main { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:16px 12px 40px; }
+      .section-title { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--gold); letter-spacing:3px; padding:0 0 10px; border-bottom:1px solid var(--border); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+      .section-title span { font-size:20px; }
+      .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; }
+      .stats-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
+      .stat-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 10px; text-align:center; position:relative; overflow:hidden; }
+      .stat-box::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--gold); }
+      .stat-value { font-family:'Bebas Neue',cursive; font-size:clamp(22px,5vw,34px); color:var(--gold); line-height:1; }
+      .stat-label { font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; margin-top:4px; }
+      .leaderboard-row { display:grid; grid-template-columns:42px 1fr 70px 70px; align-items:center; padding:10px 12px; border-radius:8px; margin-bottom:6px; cursor:pointer; transition:background 0.15s,transform 0.1s; border:1px solid transparent; }
+      .leaderboard-row:hover { background:var(--gold-glow); border-color:var(--border); transform:translateX(2px); }
+      .leaderboard-row.rank-1 { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.3); }
+      .leaderboard-row.rank-2 { background:rgba(192,192,192,0.08); border-color:rgba(192,192,192,0.2); }
+      .leaderboard-row.rank-3 { background:rgba(205,127,50,0.1); border-color:rgba(205,127,50,0.25); }
+      .rank-badge { font-family:'Bebas Neue',cursive; font-size:18px; color:var(--text-dim); text-align:center; }
+      .rank-1 .rank-badge { color:#FFD700; }
+      .rank-2 .rank-badge { color:#C0C0C0; }
+      .rank-3 .rank-badge { color:#CD7F32; }
+      .player-name { font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:8px; }
+      .fine-amount { font-family:'DM Mono',monospace; font-size:13px; font-weight:500; color:var(--gold); text-align:right; }
+      .owing-amount { font-family:'DM Mono',monospace; font-size:12px; text-align:right; }
+      .owing-amount.has-debt { color:var(--red); }
+      .owing-amount.no-debt { color:var(--text-dim); }
+      .lb-header { display:grid; grid-template-columns:42px 1fr 70px 70px; padding:0 12px 8px; font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; }
+      .lb-header span:nth-child(3), .lb-header span:nth-child(4) { text-align:right; }
+      .player-selector { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; margin-bottom:16px; }
+      .player-btn { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 8px; text-align:center; cursor:pointer; transition:all 0.15s; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; color:var(--text-dim); line-height:1.3; }
+      .player-btn:hover { background:var(--gold-glow); border-color:var(--gold); color:var(--text); }
+      .player-btn.active { background:var(--gold); border-color:var(--gold); color:var(--black); font-weight:700; }
+      .shirt-num { display:block; font-family:'Bebas Neue',cursive; font-size:20px; color:var(--gold); line-height:1; margin-bottom:2px; }
+      .player-btn.active .shirt-num { color:var(--black); }
+      .player-stats { display:none; }
+      .player-stats.visible { display:block; }
+      .player-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; padding:14px; background:var(--surface2); border-radius:10px; border:1px solid var(--border); }
+      .player-avatar { width:52px; height:52px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',cursive; font-size:22px; color:var(--black); flex-shrink:0; }
+      .player-info h2 { font-family:'Bebas Neue',cursive; font-size:24px; color:var(--gold); letter-spacing:1px; }
+      .player-info p { font-size:12px; color:var(--text-dim); }
+      .player-mini-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+      .mini-stat { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
+      .mini-stat-val { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--gold); line-height:1; }
+      .mini-stat-val.red { color:var(--red); }
+      .mini-stat-val.green { color:var(--green); }
+      .mini-stat-lbl { font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
+      .fine-table { width:100%; border-collapse:collapse; }
+      .fine-table th { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:6px 10px; border-bottom:1px solid var(--border); text-align:left; font-weight:500; }
+      .fine-table th:last-child { text-align:right; }
+      .fine-table td { padding:9px 10px; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:middle; }
+      .fine-table tr:last-child td { border-bottom:none; }
+      .fine-table td:last-child { text-align:right; font-family:'DM Mono',monospace; }
+      .status-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; letter-spacing:0.5px; }
+      .status-badge.unpaid { background:rgba(231,76,60,0.2); color:var(--red); }
+      .status-badge.paid { background:rgba(46,204,113,0.2); color:var(--green); }
+      .status-badge.waived { background:rgba(255,255,255,0.08); color:var(--text-dim); }
+      .fine-type-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+      .fine-type-row:last-child { border-bottom:none; }
+      .fine-type-bar-wrap { flex:1; height:6px; background:var(--surface3); border-radius:3px; overflow:hidden; }
+      .fine-type-bar { height:100%; background:var(--gold); border-radius:3px; transition:width 0.6s ease; }
+      .fine-type-name { font-size:12px; color:var(--text); min-width:0; flex:2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .fine-type-count { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); width:30px; text-align:right; flex-shrink:0; }
+      .fine-type-amt { font-family:'DM Mono',monospace; font-size:12px; color:var(--gold); width:55px; text-align:right; flex-shrink:0; }
+      .loading { text-align:center; padding:40px; color:var(--text-dim); font-size:13px; letter-spacing:1px; }
+      .loading::after { content:''; display:block; width:32px; height:32px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; margin:16px auto 0; }
+      @keyframes spin { to { transform:rotate(360deg); } }
+      .error-msg { text-align:center; padding:30px; color:var(--red); font-size:13px; background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.2); border-radius:10px; }
+      .empty-state { text-align:center; padding:24px; color:var(--text-dim); font-size:13px; }
+      .tab-bar { display:flex; gap:4px; margin-bottom:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:4px; }
+      .tab-btn { flex:1; padding:9px 6px; border:none; border-radius:7px; background:transparent; color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:0.5px; transition:all 0.15s; text-transform:uppercase; }
+      .tab-btn.active { background:var(--gold); color:var(--black); }
+      .tab-panel { display:none; }
+      .tab-panel.active { display:block; }
+      footer { position:relative; z-index:1; text-align:center; padding:20px; font-size:10px; color:var(--tex
+  </style></title>
+  </head>
