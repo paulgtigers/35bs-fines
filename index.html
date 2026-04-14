@@ -613,7 +613,11 @@
   <!-- ══ TAB 3: OFFENCES ══ -->
   <div class="tab-panel" id="tab-offences">
     <div class="card">
-      <div class="section-title"><span>📋</span> Fine-Type Summary</div>
+      <div class="section-title"><span>📋</span> Fine Schedule</div>
+      <div id="fineScheduleContent"><div class="loading">Fetching data</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>📊</span> Fine-Type Summary</div>
       <div id="offenceContent"><div class="loading">Fetching data</div></div>
     </div>
   </div>
@@ -793,6 +797,7 @@ function renderAll() {
   renderTeamStats();
   renderLeaderboard();
   renderPlayerSelector();
+  renderFineSchedule();
   renderOffences();
   renderFinesLog();
 }
@@ -946,6 +951,39 @@ function selectPlayer(name) {
 
   document.getElementById('playerStats').classList.add('visible');
   document.getElementById('playerStats').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── Fine schedule (full list) ────────────────────────────────────
+function renderFineSchedule() {
+  const container = document.getElementById('fineScheduleContent');
+  if (!DATA.offences.length) {
+    container.innerHTML = '<div class="empty-state">No offence data loaded.</div>';
+    return;
+  }
+
+  let rows = '';
+  for (const o of DATA.offences) {
+    const amt = o.code === 'F12' ? 'Variable' : fmt(o.amount);
+    rows += `<tr>
+      <td style="color:var(--gold);font-family:'DM Mono',monospace;font-size:12px;font-weight:600;white-space:nowrap;">${o.code}</td>
+      <td>${o.desc}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;">${amt}</td>
+    </tr>`;
+  }
+
+  container.innerHTML = `
+    <table class="fine-table">
+      <thead><tr>
+        <th>Code</th>
+        <th>Offence</th>
+        <th style="text-align:right">Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:14px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6;">
+      <span style="color:var(--amber);font-weight:600;">⚠ Double Fine Rule:</span>
+      After a loss, as a penalty all fines will double and remain doubled until after a win.
+    </div>`;
 }
 
 // ── Offences summary ──────────────────────────────────────────────
